@@ -841,6 +841,7 @@ def fix_file(filename, args, standard_out):
                 '{filename}: Unused imports/variables detected'.format(
                     filename=filename))
             sys.exit(1)
+        if args.in_place:
             with open_with_encoding(filename, mode='w',
                                     encoding=encoding) as output_file:
                 output_file.write(filtered_source)
