@@ -568,6 +568,72 @@ def foo():
             self.assertIn('import re', result)
         finally:
             shutil.rmtree(temp_directory)
+            
+    def test_filter_code_populate_dunder_all(self):
+        self.assertEqual("""
+import math
+import sys
+__all__ = ['math', 'sys']
+""", ''.join(autoflake.filter_code("""
+import math
+import sys
+""", populate_dunder_all=True)))
+
+    def test_filter_code_populate_dunder_all_should_not_create_a_mess(self):
+        code = """
+import math
+import sys
+__all__ = [
+    'math', 'sys'
+]
+import abc
+"""
+        self.assertEqual(
+            code,
+            ''.join(autoflake.filter_code(code, populate_dunder_all=True)))
+
+    def test_filter_code_populate_dunder_all_should_ignore_dotted_import(self):
+        code = """
+import foo.bar
+"""
+        self.assertEqual(
+            code,
+            ''.join(autoflake.filter_code(code, populate_dunder_all=True)))
+
+    def test_filter_code_populate_dunder_all_from_import(self):
+        self.assertEqual("""
+from a.b import Foo
+from a.c import Bar
+__all__ = ['Foo', 'Bar']
+""", ''.join(autoflake.filter_code("""
+from a.b import Foo
+from a.c import Bar
+""", populate_dunder_all=True)))
+
+    def test_filter_code_populate_dunder_all_as(self):
+        self.assertEqual("""
+import math as m
+__all__ = ['m']
+""", ''.join(autoflake.filter_code("""
+import math as m
+""", populate_dunder_all=True)))
+
+    def test_filter_code_populate_dunder_all_with_tab(self):
+        self.assertEqual("""
+import math\tas\tm
+__all__ = ['m']
+""", ''.join(autoflake.filter_code("""
+import math\tas\tm
+""", populate_dunder_all=True)))
+
+    def test_filter_code_populate_dunder_all_with_no_change(self):
+        code = """
+def foo():
+    bar = 0
+"""
+        self.assertEqual(
+            code,
+            ''.join(autoflake.filter_code(code, populate_dunder_all=True)))
 
     def test_fix_code(self):
         self.assertEqual(
